@@ -93,7 +93,44 @@ class Patient {
       });
     });
   }
+
+  static search(name) {
+    return new Promise((resolve, reject) => {
+      console.log(`Mencari pasien dengan nama: ${name}`); // Cek apakah nama yang dikirim benar
+      const query = "SELECT * FROM patients WHERE name LIKE ?";
+      
+      // Pastikan db.query sudah sesuai dengan pengaturan koneksi database
+      db.query(query, [`%${name}%`], (err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results);
+        }
+     });
+});
 }
+static findByStatus(status) {
+  return new Promise((resolve, reject) => {
+    const validStatuses = ["positive", "recovered", "dead"]; // Status yang valid
+    if (!validStatuses.includes(status)) {
+      return reject(new Error(`Invalid status parameter: ${status}. Valid statuses are ${validStatuses.join(", ")}.`)); // Pesan error lebih informatif
+    }
+
+    db.query(
+      "SELECT * FROM patients WHERE status = ?",
+      [status], // Parameter status, aman dari SQL Injection
+      (err, results) => {
+        if (err) {
+          return reject(err); // Jika terjadi error query, reject dengan error
+        }
+        resolve(results || []); // Kembalikan array kosong jika tidak ada hasil
+      }
+    );
+  });
+}
+
+}
+
 
 // Export class Patient
 module.exports = Patient;

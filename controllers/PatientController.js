@@ -111,47 +111,92 @@ class PatientController {
   // Search patients by name
   async search(req, res) {
     const { name } = req.params;
-
-    try {
-      const results = await Patient.searchByName(name);
-
-      if (results.length === 0) {
-        return res.status(404).json({ message: "Resource not found" });
-      }
-
-      res.status(200).json({
-        message: "Get searched resource successfully",
-        data: results,
+    console.log(`Mencari dengan nama: ${name}`);  // Log nilai yang diterima
+    
+    if (!name) {
+      return res.status(400).json({
+        message: "Nama pasien harus diberikan",
       });
-    } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
     }
-  }
-
-  // Get patients by status
-  async findByStatus(req, res) {
-    const { status } = req.params;
-
+  
     try {
-      const results = await Patient.findByStatus(status);
-
-      if (results.length === 0) {
+      // Memastikan nama yang diterima adalah string yang valid
+      const patients = await Patient.search(name);
+      console.log(patients);  // Log hasil pencarian
+      
+      if (patients.length === 0) {
         return res.status(404).json({
-          message: "No patients found with the given status",
+          message: "Pasien tidak ditemukan",
         });
       }
-
+  
       res.status(200).json({
-        message: `Get ${status} resource successfully`,
-        total: results.length,
-        data: results,
+        message: "Data pasien ditemukan",
+        data: patients,
       });
     } catch (error) {
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({
+        message: "Terjadi kesalahan saat mencari data pasien",
+        error: error.message,
+   });
+}
+}
+
+  // Get patients by status
+  async positive(req, res) {
+    try {
+      const patients = await Patient.findByStatus("positive");
+      const message = patients.length
+        ? "Get positive resource"
+        : "No data available for positive patients";
+      res.status(200).json({
+        message,
+        data: patients,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Internal server error",
+        error: error.message,
+      });
+    }
+  }
+  
+  async recovered(req, res) {
+    try {
+      const patients = await Patient.findByStatus("recovered");
+      const message = patients.length
+        ? "Get recovered resource"
+        : "No data available for recovered patients";
+      res.status(200).json({
+        message,
+        data: patients,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Internal server error",
+        error: error.message,
+      });
+    }
+  }
+  
+  async dead(req, res) {
+    try {
+      const patients = await Patient.findByStatus("dead");
+      const message = patients.length
+        ? "Get dead resource"
+        : "No data available for dead patients";
+      res.status(200).json({
+        message,
+        data: patients,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Internal server error",
+        error: error.message,
+      });
     }
   }
 }
-
 // Create an object of PatientController
 const patientController = new PatientController();
 
